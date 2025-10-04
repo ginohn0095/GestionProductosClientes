@@ -1,0 +1,27 @@
+﻿@model IEnumerable<GestionProductosClientes.ViewModels.ClienteViewModel>
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<h1>Clientes</h1>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nombre completo</th>
+            <th>Teléfono</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@($"{c.Nombre} {c.ApellidoPaterno} {c.ApellidoMaterno}")</td>
+                <td>@c.Telefono</td>
+            </tr>
+        }
+    </tbody>
+</table>

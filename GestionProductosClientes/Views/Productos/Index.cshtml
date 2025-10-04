@@ -1,0 +1,31 @@
+﻿@model IEnumerable<GestionProductosClientes.ViewModels.ProductoViewModel>
+
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<h1>Productos</h1>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th class="text-end">Precio</th>
+            <th class="text-end">Existencia</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Nombre</td>
+                <td>@item.Descripcion</td>
+                <td class="text-end">@item.Precio.ToString("C")</td>
+                <td class="text-end">@item.Existencia</td>
+            </tr>
+        }
+    </tbody>
+</table>
