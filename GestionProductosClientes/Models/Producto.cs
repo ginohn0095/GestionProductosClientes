@@ -17,5 +17,10 @@ namespace GestionProductosClientes.Models
 
         [Range(0, int.MaxValue)]
         public int Existencia { get; set; }
+
+ 
+        public int IdMarca { get; set; }
+      
+
     }
 }

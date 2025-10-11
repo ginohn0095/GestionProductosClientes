@@ -7,8 +7,10 @@
         public string? Descripcion { get; set; }
         public decimal Precio { get; set; }
         public int Existencia { get; set; }
-
-        // Propiedad calculada de ejemplo
         public string PrecioDisplay => Precio.ToString("C");
+        public int IdMarca { get; set; }
+        public string ? NombreM { get; set; }
+
+
     }
 }
