@@ -31,7 +31,7 @@ namespace GestionProductosClientes.Controllers
             return View(vm);
         }
 
-        // 🔎 NUEVA ACCIÓN AJAX: búsqueda por ID
+        //  AJAX: búsqueda por ID
         [HttpGet]
         public async Task<IActionResult> SearchById(int id)
         {
