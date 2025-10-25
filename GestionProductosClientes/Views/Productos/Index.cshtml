@@ -4,17 +4,20 @@
     ViewData["Title"] = "Productos";
 }
 
-<h1>Productos</h1>
+<h1 class="mb-4">Gestión de Productos</h1>
 
-
-<div class="card mb-3">
+<!--Búsqueda por ID -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        Buscar producto
+    </div>
     <div class="card-body">
         <form id="searchForm" class="row g-2 align-items-center">
             <div class="col-auto">
-                <label for="searchId" class="col-form-label">Buscar por ID:</label>
+                <label for="searchId" class="col-form-label">ID:</label>
             </div>
             <div class="col-auto">
-                <input type="number" min="1" class="form-control" id="searchId" placeholder="Ingresa el ID" />
+                <input type="number" min="1" class="form-control" id="searchId" placeholder="Ej. 3" />
             </div>
             <div class="col-auto">
                 <button id="btnSearch" class="btn btn-primary">Buscar</button>
@@ -25,15 +28,15 @@
     </div>
 </div>
 
-
-<div id="loading" style="display:none;" class="mb-2">
+<!--Indicador de carga -->
+<div id="loading" style="display:none;" class="mb-3">
     <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
     <span class="ms-2">Buscando...</span>
 </div>
 
-
-<table id="productsTable" class="table table-striped table-responsive">
-    <thead>
+<!--Tabla de productos -->
+<table id="productsTable" class="table table-striped table-bordered table-hover">
+    <thead class="table-dark">
         <tr>
             <th>Id</th>
             <th>Nombre</th>
@@ -56,23 +59,61 @@
     </tbody>
 </table>
 
+<hr />
+
+<!--Formulario para crear producto -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-success text-white">
+        Crear nuevo producto
+    </div>
+    <div class="card-body">
+        <form id="createForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="nombre" class="form-label">Nombre *</label>
+                    <input type="text" id="nombre" class="form-control" maxlength="100" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="precio" class="form-label">Precio *</label>
+                    <input type="number" id="precio" class="form-control" min="0" step="0.01" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="existencia" class="form-label">Existencia *</label>
+                    <input type="number" id="existencia" class="form-control" min="0" required />
+                </div>
+                <div class="col-md-6">
+                    <label for="idMarca" class="form-label">Id de Marca *</label>
+                    <input type="number" id="idMarca" class="form-control" min="1" required />
+                </div>
+                <div class="col-12">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea id="descripcion" class="form-control" maxlength="500"></textarea>
+                </div>
+                <div class="col-12 mt-3">
+                    <button id="btnCreate" class="btn btn-success">Guardar</button>
+                    <span id="createMessage" class="ms-3"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(function () {
 
-            //Función para mostrar mensajes dinámicos
+
+              //Busqueda por Id
             function showMessage(msg, type) {
                 var html = '<div class="alert alert-' + (type || 'info') + ' mt-2">' + msg + '</div>';
                 $('#searchMessage').html(html);
             }
 
-            //Botón Buscar
             $('#btnSearch').on('click', function (e) {
                 e.preventDefault();
                 var id = $('#searchId').val();
 
-                // Validación cliente
                 if (!id || !/^[0-9]+$/.test(id)) {
                     showMessage('Por favor ingresa un ID numérico válido.', 'warning');
                     return;
@@ -82,45 +123,97 @@
                 $('#loading').show();
                 $('#searchMessage').empty();
 
-                //Petición AJAX al controlador
                 $.ajax({
                     url: '@Url.Action("SearchById", "Productos")',
                     method: 'GET',
                     data: { id: id },
                     dataType: 'json'
                 })
-                .done(function (response) {
-                    if (response && response.success) {
-                        //Producto encontrado
-                        var p = response.product;
-                        var row = '<tr>' +
-                            '<td>' + p.id + '</td>' +
-                            '<td>' + p.nombre + '</td>' +
-                            '<td>' + p.descripcion + '</td>' +
-                            '<td>' + p.precio + '</td>' +
-                            '<td>' + p.existencia + '</td>' +
-                            '</tr>';
-                        $('table#productsTable tbody').html(row);
-                        showMessage('Producto encontrado.', 'success');
-                    } else {
-                        //Producto no encontrado
-                        $('table#productsTable tbody').empty();
-                        showMessage(response.message, 'info');
-                    }
-                })
-                .fail(function () {
-                    showMessage('Error al realizar la búsqueda.', 'danger');
-                })
-                .always(function () {
-                    $('#loading').hide();
-                    $('#btnSearch').prop('disabled', false);
-                });
+                    .done(function (response) {
+                        if (response && response.success) {
+                            var p = response.data;
+                            var row = '<tr>' +
+                                '<td>' + p.id + '</td>' +
+                                '<td>' + p.nombre + '</td>' +
+                                '<td>' + (p.descripcion || '') + '</td>' +
+                                '<td>' + p.precio + '</td>' +
+                                '<td>' + p.existencia + '</td>' +
+                                '</tr>';
+                            $('#productsTable tbody').html(row);
+                            showMessage('Producto encontrado.', 'success');
+                        } else {
+                            $('#productsTable tbody').empty();
+                            showMessage(response.message, 'info');
+                        }
+                    })
+                    .fail(function () {
+                        showMessage('Error al realizar la búsqueda.', 'danger');
+                    })
+                    .always(function () {
+                        $('#loading').hide();
+                        $('#btnSearch').prop('disabled', false);
+                    });
             });
 
-            //Botón para restaurar la vista completa
             $('#btnReset').on('click', function (e) {
                 e.preventDefault();
                 window.location.reload();
+            });
+
+
+               //Creacion de producto nuevo
+            $('#createForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var producto = {
+                    nombre: $('#nombre').val().trim(),
+                    descripcion: $('#descripcion').val().trim(),
+                    precio: parseFloat($('#precio').val()) || 0,
+                    existencia: parseInt($('#existencia').val()) || 0,
+                    idMarca: parseInt($('#idMarca').val()) || 0
+                };
+
+                if (!producto.nombre || producto.precio < 0 || producto.existencia < 0 || producto.idMarca <= 0) {
+                    $('#createMessage').html('<div class="alert alert-warning mt-2">Verifica los campos obligatorios.</div>');
+                    return;
+                }
+
+                $('#btnCreate').prop('disabled', true);
+                $('#createMessage').html('<div class="text-info">Guardando producto...</div>');
+
+                $.ajax({
+                    url: '@Url.Action("Create", "Productos")',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(producto),
+                    dataType: 'json'
+                })
+                    .done(function (response) {
+                        if (response.success) {
+                            $('#createMessage').html('<div class="alert alert-success mt-2">' + response.message + '</div>');
+
+                            // Agregar el nuevo producto a la tabla
+                            var p = response.data;
+                            var row = '<tr>' +
+                                '<td>' + p.id + '</td>' +
+                                '<td>' + p.nombre + '</td>' +
+                                '<td>' + (p.descripcion || '') + '</td>' +
+                                '<td>' + p.precio + '</td>' +
+                                '<td>' + p.existencia + '</td>' +
+                                '</tr>';
+                            $('#productsTable tbody').append(row);
+                            $('#createForm')[0].reset();
+                        } else {
+                            var err = response.errors ? JSON.stringify(response.errors) : response.message;
+                            $('#createMessage').html('<div class="alert alert-danger mt-2">' + err + '</div>');
+                        }
+                    })
+                    .fail(function (xhr) {
+                        $('#createMessage').html('<div class="alert alert-danger mt-2">Error al crear el producto.</div>');
+                    })
+                    .always(function () {
+                        $('#btnCreate').prop('disabled', false);
+                    });
             });
         });
     </script>

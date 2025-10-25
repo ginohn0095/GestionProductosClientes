@@ -1,8 +1,8 @@
 ﻿using GestionProductosClientes.Data;
+using GestionProductosClientes.Models;
 using GestionProductosClientes.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace GestionProductosClientes.Controllers
 {
@@ -15,7 +15,7 @@ namespace GestionProductosClientes.Controllers
             _context = context;
         }
 
-        // Acción principal que muestra todos los productos
+        //Muestra lista de productos
         public async Task<IActionResult> Index()
         {
             var productos = await _context.Productos.AsNoTracking().ToListAsync();
@@ -31,31 +31,79 @@ namespace GestionProductosClientes.Controllers
             return View(vm);
         }
 
-        //  AJAX: búsqueda por ID
+        //GET: búsqueda por ID con AJAX
         [HttpGet]
         public async Task<IActionResult> SearchById(int id)
         {
             try
             {
-                // Validamos que el ID sea válido
                 if (id <= 0)
                     return Json(new { success = false, message = "El Id debe ser un número entero positivo." });
 
-                // LINQ + EF Core → Busca el producto en la base de datos
                 var product = await _context.Productos
                     .AsNoTracking()
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (product == null)
-                    return Json(new { success = false, message = "Producto no encontrado" });
+                    return Json(new { success = false, message = "Producto no encontrado." });
 
-                // Retornamos JSON con el producto completo
-                return Json(new { success = true, product });
+                return Json(new { success = true, data = product });
             }
             catch (Exception ex)
             {
-                // Capturamos errores y devolvemos mensaje genérico
-                return Json(new { success = false, message = "Ocurrió un error al buscar el producto.", detail = ex.Message });
+                return Json(new { success = false, message = "Ocurrió un error al buscar el producto.", error = ex.Message });
+            }
+        }
+
+        //POST: crear producto con AJAX
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ProductoViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errores = ModelState
+                        .Where(e => e.Value?.Errors.Count > 0)
+                        .Select(e => new
+                        {
+                            Campo = e.Key,
+                            Mensajes = e.Value?.Errors.Select(x => x.ErrorMessage).ToArray()
+                        });
+
+                    return Json(new { success = false, message = "Error de validación.", errors = errores });
+                }
+
+                // Crear Producto
+                var producto = new Producto
+                {
+                    Nombre = model.Nombre,
+                    Descripcion = model.Descripcion,
+                    Precio = model.Precio,
+                    Existencia = model.Existencia,
+                    IdMarca = model.IdMarca
+                };
+
+                _context.Productos.Add(producto);
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Producto creado correctamente.",
+                    data = new
+                    {
+                        producto.Id,
+                        producto.Nombre,
+                        producto.Descripcion,
+                        producto.Precio,
+                        producto.Existencia
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al crear el producto.", error = ex.Message });
             }
         }
     }
