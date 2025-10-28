@@ -6,11 +6,9 @@
 
 <h1 class="mb-4">Gestión de Productos</h1>
 
-<!--Búsqueda por ID -->
+<!-- Búsqueda por ID -->
 <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-primary text-white">
-        Buscar producto
-    </div>
+    <div class="card-header bg-primary text-white">Buscar producto</div>
     <div class="card-body">
         <form id="searchForm" class="row g-2 align-items-center">
             <div class="col-auto">
@@ -28,13 +26,11 @@
     </div>
 </div>
 
-<!--Indicador de carga -->
 <div id="loading" style="display:none;" class="mb-3">
     <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
     <span class="ms-2">Buscando...</span>
 </div>
 
-<!--Tabla de productos -->
 <table id="productsTable" class="table table-striped table-bordered table-hover">
     <thead class="table-dark">
         <tr>
@@ -61,33 +57,36 @@
 
 <hr />
 
-<!--Formulario para crear producto -->
+<!-- Formulario crear producto -->
 <div class="card shadow-sm mt-4">
-    <div class="card-header bg-success text-white">
-        Crear nuevo producto
-    </div>
+    <div class="card-header bg-success text-white">Crear nuevo producto</div>
     <div class="card-body">
-        <form id="createForm">
+        <form id="createForm" novalidate>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="nombre" class="form-label">Nombre *</label>
-                    <input type="text" id="nombre" class="form-control" maxlength="100" required />
+                    <input type="text" id="nombre" class="form-control" maxlength="100" />
+                    <div class="invalid-feedback" data-valmsg-for="Nombre"></div>
                 </div>
                 <div class="col-md-6">
                     <label for="precio" class="form-label">Precio *</label>
-                    <input type="number" id="precio" class="form-control" min="0" step="0.01" required />
+                    <input type="number" id="precio" class="form-control" min="0" step="0.01" />
+                    <div class="invalid-feedback" data-valmsg-for="Precio"></div>
                 </div>
                 <div class="col-md-6">
                     <label for="existencia" class="form-label">Existencia *</label>
-                    <input type="number" id="existencia" class="form-control" min="0" required />
+                    <input type="number" id="existencia" class="form-control" min="0" />
+                    <div class="invalid-feedback" data-valmsg-for="Existencia"></div>
                 </div>
                 <div class="col-md-6">
                     <label for="idMarca" class="form-label">Id de Marca *</label>
-                    <input type="number" id="idMarca" class="form-control" min="1" required />
+                    <input type="number" id="idMarca" class="form-control" min="1" />
+                    <div class="invalid-feedback" data-valmsg-for="IdMarca"></div>
                 </div>
                 <div class="col-12">
                     <label for="descripcion" class="form-label">Descripción</label>
                     <textarea id="descripcion" class="form-control" maxlength="500"></textarea>
+                    <div class="invalid-feedback" data-valmsg-for="Descripcion"></div>
                 </div>
                 <div class="col-12 mt-3">
                     <button id="btnCreate" class="btn btn-success">Guardar</button>
@@ -103,8 +102,42 @@
     <script>
         $(function () {
 
+            // Helper: map server property names -> input IDs
+            var fieldMap = {
+                "Nombre": "#nombre",
+                "Descripcion": "#descripcion",
+                "Precio": "#precio",
+                "Existencia": "#existencia",
+                "IdMarca": "#idMarca"
+            };
 
-              //Busqueda por Id
+            function clearFieldErrors() {
+                // Remove is-invalid and messages
+                $.each(fieldMap, function (prop, selector) {
+                    $(selector).removeClass('is-invalid');
+                    $('div.invalid-feedback[data-valmsg-for="' + prop + '"]').text('');
+                });
+            }
+
+            function showFieldErrors(errors) {
+                // errors expected as dictionary: { "Nombre": ["msg1","msg2"], ... }
+                clearFieldErrors();
+                if (!errors) return;
+
+                Object.keys(errors).forEach(function (key) {
+                    var msgs = errors[key];
+                    var selector = fieldMap[key];
+                    if (selector) {
+                        $(selector).addClass('is-invalid');
+                        $('div.invalid-feedback[data-valmsg-for="' + key + '"]').text(msgs.join(', '));
+                    } else {
+                        // si no hay mapping, mostrar en mensaje general
+                        $('#createMessage').append('<div class="alert alert-warning mt-2">' + key + ': ' + msgs.join(', ') + '</div>');
+                    }
+                });
+            }
+
+            /* =================== BUSQUEDA =================== */
             function showMessage(msg, type) {
                 var html = '<div class="alert alert-' + (type || 'info') + ' mt-2">' + msg + '</div>';
                 $('#searchMessage').html(html);
@@ -160,21 +193,42 @@
                 window.location.reload();
             });
 
+            /* =================== CREACIÓN =================== */
 
-               //Creacion de producto nuevo
+            // limpiar errores cuando el usuario escribe
+            $('#createForm input, #createForm textarea').on('input change', function () {
+                var id = $(this).attr('id');
+                // quitar clase invalid
+                $(this).removeClass('is-invalid');
+                // limpiar mensaje asociado (buscar por Display property)
+                // buscamos la propiedad mapeada
+                var prop = Object.keys(fieldMap).find(k => fieldMap[k] === '#' + id);
+                if (prop) $('div.invalid-feedback[data-valmsg-for="' + prop + '"]').text('');
+                $('#createMessage').empty();
+            });
+
             $('#createForm').on('submit', function (e) {
                 e.preventDefault();
+                clearFieldErrors();
+                $('#createMessage').empty();
 
                 var producto = {
-                    nombre: $('#nombre').val().trim(),
-                    descripcion: $('#descripcion').val().trim(),
-                    precio: parseFloat($('#precio').val()) || 0,
-                    existencia: parseInt($('#existencia').val()) || 0,
-                    idMarca: parseInt($('#idMarca').val()) || 0
+                    Nombre: $('#nombre').val().trim(),
+                    Descripcion: $('#descripcion').val().trim(),
+                    Precio: parseFloat($('#precio').val()) || 0,
+                    Existencia: parseInt($('#existencia').val()) || 0,
+                    IdMarca: parseInt($('#idMarca').val()) || 0
                 };
 
-                if (!producto.nombre || producto.precio < 0 || producto.existencia < 0 || producto.idMarca <= 0) {
-                    $('#createMessage').html('<div class="alert alert-warning mt-2">Verifica los campos obligatorios.</div>');
+                // Validación cliente simple
+                var clientErrors = [];
+                if (!producto.Nombre) clientErrors.push('Nombre es obligatorio.');
+                if (producto.Precio < 0) clientErrors.push('Precio inválido.');
+                if (producto.Existencia < 0) clientErrors.push('Existencia inválida.');
+                if (producto.IdMarca <= 0) clientErrors.push('IdMarca inválido.');
+
+                if (clientErrors.length) {
+                    $('#createMessage').html('<div class="alert alert-warning mt-2">' + clientErrors.join(' ') + '</div>');
                     return;
                 }
 
@@ -192,7 +246,6 @@
                         if (response.success) {
                             $('#createMessage').html('<div class="alert alert-success mt-2">' + response.message + '</div>');
 
-                            // Agregar el nuevo producto a la tabla
                             var p = response.data;
                             var row = '<tr>' +
                                 '<td>' + p.id + '</td>' +
@@ -204,8 +257,15 @@
                             $('#productsTable tbody').append(row);
                             $('#createForm')[0].reset();
                         } else {
-                            var err = response.errors ? JSON.stringify(response.errors) : response.message;
-                            $('#createMessage').html('<div class="alert alert-danger mt-2">' + err + '</div>');
+                            // si vienen errores por campo, los pintamos
+                            if (response.errors) {
+                                showFieldErrors(response.errors);
+                                // mostrar mensaje general adicional
+                                if (response.message) $('#createMessage').append('<div class="alert alert-danger mt-2">' + response.message + '</div>');
+                            } else {
+                                var err = response.message || 'Error al crear el producto.';
+                                $('#createMessage').html('<div class="alert alert-danger mt-2">' + err + '</div>');
+                            }
                         }
                     })
                     .fail(function (xhr) {

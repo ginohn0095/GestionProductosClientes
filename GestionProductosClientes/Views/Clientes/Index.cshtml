@@ -6,7 +6,7 @@
 
 <h1>Clientes</h1>
 
-<table class="table table-bordered">
+<table class="table table-bordered mb-4">
     <thead>
         <tr>
             <th>Id</th>
@@ -14,7 +14,7 @@
             <th>Teléfono</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="clientesTbody">
         @foreach (var c in Model)
         {
             <tr>
@@ -25,3 +25,136 @@
         }
     </tbody>
 </table>
+
+<hr />
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-success text-white">Crear nuevo cliente</div>
+    <div class="card-body">
+        <form id="createClienteForm" novalidate>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="cNombre" class="form-label">Nombre *</label>
+                    <input id="cNombre" class="form-control" />
+                    <div class="invalid-feedback" data-valmsg-for="Nombre"></div>
+                </div>
+                <div class="col-md-4">
+                    <label for="cApellidoP" class="form-label">Apellido Paterno *</label>
+                    <input id="cApellidoP" class="form-control" />
+                    <div class="invalid-feedback" data-valmsg-for="ApellidoPaterno"></div>
+                </div>
+                <div class="col-md-4">
+                    <label for="cApellidoM" class="form-label">Apellido Materno</label>
+                    <input id="cApellidoM" class="form-control" />
+                    <div class="invalid-feedback" data-valmsg-for="ApellidoMaterno"></div>
+                </div>
+                <div class="col-md-4">
+                    <label for="cTelefono" class="form-label">Teléfono</label>
+                    <input id="cTelefono" class="form-control" />
+                    <div class="invalid-feedback" data-valmsg-for="Telefono"></div>
+                </div>
+                <div class="col-12 mt-3">
+                    <button id="btnCreateCliente" class="btn btn-success">Crear Cliente</button>
+                    <span id="createClienteMessage" class="ms-3"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function () {
+            var fieldMap = {
+                "Nombre": "#cNombre",
+                "ApellidoPaterno": "#cApellidoP",
+                "ApellidoMaterno": "#cApellidoM",
+                "Telefono": "#cTelefono"
+            };
+
+            function clearFieldErrors() {
+                $.each(fieldMap, function (prop, selector) {
+                    $(selector).removeClass('is-invalid');
+                    $('div.invalid-feedback[data-valmsg-for="' + prop + '"]').text('');
+                });
+            }
+
+            function showFieldErrors(errors) {
+                clearFieldErrors();
+                if (!errors) return;
+                Object.keys(errors).forEach(function (key) {
+                    var msgs = errors[key];
+                    var selector = fieldMap[key];
+                    if (selector) {
+                        $(selector).addClass('is-invalid');
+                        $('div.invalid-feedback[data-valmsg-for="' + key + '"]').text(msgs.join(', '));
+                    } else {
+                        $('#createClienteMessage').append('<div class="alert alert-warning mt-2">' + key + ': ' + msgs.join(', ') + '</div>');
+                    }
+                });
+            }
+
+            // limpiar al editar
+            $('#createClienteForm input').on('input', function () {
+                var id = $(this).attr('id');
+                $(this).removeClass('is-invalid');
+                var prop = Object.keys(fieldMap).find(k => fieldMap[k] === '#' + id);
+                if (prop) $('div.invalid-feedback[data-valmsg-for="' + prop + '"]').text('');
+                $('#createClienteMessage').empty();
+            });
+
+            $('#createClienteForm').on('submit', function (e) {
+                e.preventDefault();
+                clearFieldErrors();
+                $('#createClienteMessage').empty();
+
+                var cliente = {
+                    Nombre: $('#cNombre').val().trim(),
+                    ApellidoPaterno: $('#cApellidoP').val().trim(),
+                    ApellidoMaterno: $('#cApellidoM').val().trim(),
+                    Telefono: $('#cTelefono').val().trim()
+                };
+
+                // validación cliente simple
+                if (!cliente.Nombre || !cliente.ApellidoPaterno) {
+                    $('#createClienteMessage').html('<div class="alert alert-warning mt-2">Nombre y Apellido Paterno son obligatorios.</div>');
+                    return;
+                }
+
+                $('#btnCreateCliente').prop('disabled', true);
+                $('#createClienteMessage').html('<div class="text-info">Guardando cliente...</div>');
+
+                $.ajax({
+                    url: '@Url.Action("Create", "Clientes")',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(cliente),
+                    dataType: 'json'
+                })
+                    .done(function (res) {
+                        if (res.success) {
+                            $('#createClienteMessage').html('<div class="alert alert-success mt-2">' + res.message + '</div>');
+                            var c = res.data;
+                            var row = '<tr><td>' + c.id + '</td><td>' + (c.nombre + ' ' + c.apellidoPaterno + ' ' + (c.apellidoMaterno || '')) + '</td><td>' + (c.telefono || '') + '</td></tr>';
+                            $('#clientesTbody').append(row);
+                            $('#createClienteForm')[0].reset();
+                        } else {
+                            if (res.errors) {
+                                showFieldErrors(res.errors);
+                                if (res.message) $('#createClienteMessage').append('<div class="alert alert-danger mt-2">' + res.message + '</div>');
+                            } else {
+                                $('#createClienteMessage').html('<div class="alert alert-danger mt-2">' + (res.message || 'Error creando cliente') + '</div>');
+                            }
+                        }
+                    })
+                    .fail(function () {
+                        $('#createClienteMessage').html('<div class="alert alert-danger mt-2">Error al crear cliente.</div>');
+                    })
+                    .always(function () {
+                        $('#btnCreateCliente').prop('disabled', false);
+                    });
+            });
+        });
+    </script>
+}

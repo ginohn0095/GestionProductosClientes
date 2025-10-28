@@ -15,7 +15,7 @@ namespace GestionProductosClientes.Controllers
             _context = context;
         }
 
-        //Muestra lista de productos
+        // GET: /Productos
         public async Task<IActionResult> Index()
         {
             var productos = await _context.Productos.AsNoTracking().ToListAsync();
@@ -25,13 +25,14 @@ namespace GestionProductosClientes.Controllers
                 Nombre = p.Nombre,
                 Descripcion = p.Descripcion,
                 Precio = p.Precio,
-                Existencia = p.Existencia
+                Existencia = p.Existencia,
+                IdMarca = p.IdMarca
             }).ToList();
 
             return View(vm);
         }
 
-        //GET: búsqueda por ID con AJAX
+        // GET: AJAX búsqueda por ID
         [HttpGet]
         public async Task<IActionResult> SearchById(int id)
         {
@@ -51,30 +52,35 @@ namespace GestionProductosClientes.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Ocurrió un error al buscar el producto.", error = ex.Message });
+                return Json(new { success = false, message = "Ocurrió un error al buscar el producto.", detail = ex.Message });
             }
         }
 
-        //POST: crear producto con AJAX
+        // POST: Crear producto vía AJAX (recibe JSON en el body)
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ProductoViewModel model)
+        public async Task<IActionResult> Create([FromBody] Producto model)
         {
             try
             {
-                if (!ModelState.IsValid)
+                // Forzar validación del modelo con DataAnnotations
+                if (!TryValidateModel(model))
                 {
                     var errores = ModelState
-                        .Where(e => e.Value?.Errors.Count > 0)
-                        .Select(e => new
-                        {
-                            Campo = e.Key,
-                            Mensajes = e.Value?.Errors.Select(x => x.ErrorMessage).ToArray()
-                        });
+                        .Where(kvp => kvp.Value.Errors.Count > 0)
+                        .ToDictionary(
+                            kvp => kvp.Key, // key es el nombre de la propiedad (ej. Nombre)
+                            kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                        );
 
-                    return Json(new { success = false, message = "Error de validación.", errors = errores });
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Error de validación.",
+                        errors = errores
+                    });
                 }
 
-                // Crear Producto
+                // Construir entidad y guardar
                 var producto = new Producto
                 {
                     Nombre = model.Nombre,
@@ -97,13 +103,18 @@ namespace GestionProductosClientes.Controllers
                         producto.Nombre,
                         producto.Descripcion,
                         producto.Precio,
-                        producto.Existencia
+                        producto.Existencia,
+                        producto.IdMarca
                     }
                 });
             }
+            catch (DbUpdateException dbEx)
+            {
+                return Json(new { success = false, message = "Error al guardar en la base de datos.", detail = dbEx.InnerException?.Message ?? dbEx.Message });
+            }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Ocurrió un error al crear el producto.", error = ex.Message });
+                return Json(new { success = false, message = "Error inesperado.", detail = ex.Message });
             }
         }
     }
