@@ -26,7 +26,7 @@ namespace GestionProductosClientes.Controllers
             return View(vm);
         }
 
-        // POST: crear cliente vía AJAX
+        // POST: crear cliente con AJAX
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Cliente model)
         {

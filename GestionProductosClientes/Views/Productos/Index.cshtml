@@ -102,7 +102,7 @@
     <script>
         $(function () {
 
-            // Helper: map server property names -> input IDs
+            
             var fieldMap = {
                 "Nombre": "#nombre",
                 "Descripcion": "#descripcion",
@@ -112,7 +112,6 @@
             };
 
             function clearFieldErrors() {
-                // Remove is-invalid and messages
                 $.each(fieldMap, function (prop, selector) {
                     $(selector).removeClass('is-invalid');
                     $('div.invalid-feedback[data-valmsg-for="' + prop + '"]').text('');
@@ -120,7 +119,6 @@
             }
 
             function showFieldErrors(errors) {
-                // errors expected as dictionary: { "Nombre": ["msg1","msg2"], ... }
                 clearFieldErrors();
                 if (!errors) return;
 
@@ -131,13 +129,12 @@
                         $(selector).addClass('is-invalid');
                         $('div.invalid-feedback[data-valmsg-for="' + key + '"]').text(msgs.join(', '));
                     } else {
-                        // si no hay mapping, mostrar en mensaje general
                         $('#createMessage').append('<div class="alert alert-warning mt-2">' + key + ': ' + msgs.join(', ') + '</div>');
                     }
                 });
             }
 
-            /* =================== BUSQUEDA =================== */
+            /*BUSQUEDA*/
             function showMessage(msg, type) {
                 var html = '<div class="alert alert-' + (type || 'info') + ' mt-2">' + msg + '</div>';
                 $('#searchMessage').html(html);
@@ -193,15 +190,12 @@
                 window.location.reload();
             });
 
-            /* =================== CREACIÓN =================== */
+            /*CREACIÓN */
 
             // limpiar errores cuando el usuario escribe
             $('#createForm input, #createForm textarea').on('input change', function () {
                 var id = $(this).attr('id');
-                // quitar clase invalid
                 $(this).removeClass('is-invalid');
-                // limpiar mensaje asociado (buscar por Display property)
-                // buscamos la propiedad mapeada
                 var prop = Object.keys(fieldMap).find(k => fieldMap[k] === '#' + id);
                 if (prop) $('div.invalid-feedback[data-valmsg-for="' + prop + '"]').text('');
                 $('#createMessage').empty();
@@ -220,7 +214,7 @@
                     IdMarca: parseInt($('#idMarca').val()) || 0
                 };
 
-                // Validación cliente simple
+                // Validación cliente
                 var clientErrors = [];
                 if (!producto.Nombre) clientErrors.push('Nombre es obligatorio.');
                 if (producto.Precio < 0) clientErrors.push('Precio inválido.');
@@ -257,10 +251,8 @@
                             $('#productsTable tbody').append(row);
                             $('#createForm')[0].reset();
                         } else {
-                            // si vienen errores por campo, los pintamos
                             if (response.errors) {
                                 showFieldErrors(response.errors);
-                                // mostrar mensaje general adicional
                                 if (response.message) $('#createMessage').append('<div class="alert alert-danger mt-2">' + response.message + '</div>');
                             } else {
                                 var err = response.message || 'Error al crear el producto.';

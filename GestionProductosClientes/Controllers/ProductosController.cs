@@ -15,7 +15,7 @@ namespace GestionProductosClientes.Controllers
             _context = context;
         }
 
-        // GET: /Productos
+        // GET: Productos
         public async Task<IActionResult> Index()
         {
             var productos = await _context.Productos.AsNoTracking().ToListAsync();
@@ -56,7 +56,7 @@ namespace GestionProductosClientes.Controllers
             }
         }
 
-        // POST: Crear producto vía AJAX (recibe JSON en el body)
+        // POST: Crear producto con AJAX
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Producto model)
         {
@@ -68,7 +68,7 @@ namespace GestionProductosClientes.Controllers
                     var errores = ModelState
                         .Where(kvp => kvp.Value.Errors.Count > 0)
                         .ToDictionary(
-                            kvp => kvp.Key, // key es el nombre de la propiedad (ej. Nombre)
+                            kvp => kvp.Key, 
                             kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
                         );
 
