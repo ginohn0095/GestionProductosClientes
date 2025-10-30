@@ -34,13 +34,14 @@ namespace GestionProductosClientes.Data
 
             #region tabla Clientes
             modelBuilder.Entity<Cliente>().HasData(
-                new Cliente { Id = 1, Nombre = "Luis", ApellidoPaterno = "García", ApellidoMaterno = "Lopez", Telefono = "5512345678" },
-                new Cliente { Id = 2, Nombre = "María", ApellidoPaterno = "Pérez", ApellidoMaterno = "Sánchez", Telefono = "5523456789" },
-                new Cliente { Id = 3, Nombre = "Carlos", ApellidoPaterno = "Ramírez", ApellidoMaterno = "Diaz", Telefono = "5534567890" },
-                new Cliente { Id = 4, Nombre = "Ana", ApellidoPaterno = "Martínez", ApellidoMaterno = "Ortiz", Telefono = "5545678901" },
-                new Cliente { Id = 5, Nombre = "Jorge", ApellidoPaterno = "Hernández", ApellidoMaterno = "Ruiz", Telefono = "5556789012" }
+                new Cliente { Id = 1, Nombre = "Luis", ApellidoPaterno = "García", ApellidoMaterno = "Lopez", Telefono = "5512345678", Contrasenia = "luis123" },
+                new Cliente { Id = 2, Nombre = "María", ApellidoPaterno = "Pérez", ApellidoMaterno = "Sánchez", Telefono = "5523456789", Contrasenia = "maria123" },
+                new Cliente { Id = 3, Nombre = "Carlos", ApellidoPaterno = "Ramírez", ApellidoMaterno = "Diaz", Telefono = "5534567890", Contrasenia = "carlos123" },
+                new Cliente { Id = 4, Nombre = "Ana", ApellidoPaterno = "Martínez", ApellidoMaterno = "Ortiz", Telefono = "5545678901", Contrasenia = "ana123" },
+                new Cliente { Id = 5, Nombre = "Jorge", ApellidoPaterno = "Hernández", ApellidoMaterno = "Ruiz", Telefono = "5556789012", Contrasenia = "jorge123" }
             );
             #endregion
+
 
             #region
             modelBuilder.Entity<Marca>().HasData(

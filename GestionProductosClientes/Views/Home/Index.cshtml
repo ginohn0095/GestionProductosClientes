@@ -1,7 +1,13 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">GESTION DE PRODUCTOS Y CLIENTES</h1>
+<div class="container mt-5 text-center">
+    <h2 class="mb-4">Bienvenido al sistema</h2>
+
+    <h4 class="text-success">Hola, @ViewBag.NombreUsuario 👋</h4>
+
+    <p class="mt-3">Has iniciado sesión correctamente. Puedes navegar por el sistema usando el menú superior.</p>
+
+    <a class="btn btn-danger mt-4" asp-controller="Auth" asp-action="Logout">Cerrar sesión</a>
 </div>

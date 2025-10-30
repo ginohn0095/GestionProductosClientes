@@ -1,0 +1,33 @@
+﻿@model GestionProductosClientes.ViewModels.LoginViewModel
+
+<div class="container mt-5" style="max-width: 400px;">
+    <h3 class="text-center mb-4">Acceso al Sistema</h3>
+
+    <!-- ✅ Formulario que conserva returnUrl para redirección inteligente -->
+    <form method="post" asp-action="Login">
+        <!-- ✅ Campo oculto para returnUrl -->
+        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+        <div class="mb-3">
+            <label class="form-label">ID de Usuario</label>
+            <input asp-for="Id" type="number" class="form-control" min="1" />
+            <span asp-validation-for="Id" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input asp-for="Contrasenia" type="password" class="form-control" />
+            <span asp-validation-for="Contrasenia" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 text-danger">
+            @Html.ValidationSummary(true)
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

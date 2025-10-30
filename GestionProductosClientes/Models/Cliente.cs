@@ -23,6 +23,10 @@ namespace GestionProductosClientes.Models
         [Phone(ErrorMessage = "El formato del teléfono no es válido.")]
         [Display(Name = "Teléfono")]
         public string? Telefono { get; set; }
+
+        [Required(ErrorMessage = "Contraseña obligatoria")]
+        [StringLength(15, MinimumLength = 3, ErrorMessage = "La contraseña debe tener entre 3 y 15 caracteres.")]
+        [Display(Name = "Contraseña")]
+        public string? Contrasenia { get; set; } = null!;
     }
 }
-

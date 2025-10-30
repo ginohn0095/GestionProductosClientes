@@ -1,11 +1,13 @@
 ﻿using GestionProductosClientes.Data;
 using GestionProductosClientes.Models;
 using GestionProductosClientes.ViewModels;
+using Microsoft.AspNetCore.Authorization; // ✅ Importado para proteger con cookies
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GestionProductosClientes.Controllers
 {
+    [Authorize] // ✅ Protege todo el controlador con autenticación por cookies
     public class ProductosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,10 +17,16 @@ namespace GestionProductosClientes.Controllers
             _context = context;
         }
 
-        // GET: Productos
+        // ✅ GET: Productos
         public async Task<IActionResult> Index()
         {
+            // ✅ Ya no se valida sesión manualmente. El atributo [Authorize] lo hace automáticamente.
+
+            // ✅ Opcional: mostrar nombre del usuario en la vista
+            ViewBag.NombreUsuario = HttpContext.Session.GetString("NombreUsuario") ?? "Usuario";
+
             var productos = await _context.Productos.AsNoTracking().ToListAsync();
+
             var vm = productos.Select(p => new ProductoViewModel
             {
                 Id = p.Id,
@@ -32,10 +40,12 @@ namespace GestionProductosClientes.Controllers
             return View(vm);
         }
 
-        // GET: AJAX búsqueda por ID
+        // ✅ GET: AJAX búsqueda por ID
         [HttpGet]
         public async Task<IActionResult> SearchById(int id)
         {
+            // ✅ Ya no se valida sesión manualmente. El atributo [Authorize] lo hace automáticamente.
+
             try
             {
                 if (id <= 0)
@@ -56,19 +66,20 @@ namespace GestionProductosClientes.Controllers
             }
         }
 
-        // POST: Crear producto con AJAX
+        // ✅ POST: Crear producto con AJAX
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Producto model)
         {
+            // ✅ Ya no se valida sesión manualmente. El atributo [Authorize] lo hace automáticamente.
+
             try
             {
-                // Forzar validación del modelo con DataAnnotations
                 if (!TryValidateModel(model))
                 {
                     var errores = ModelState
                         .Where(kvp => kvp.Value.Errors.Count > 0)
                         .ToDictionary(
-                            kvp => kvp.Key, 
+                            kvp => kvp.Key,
                             kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
                         );
 
@@ -80,7 +91,6 @@ namespace GestionProductosClientes.Controllers
                     });
                 }
 
-                // Construir entidad y guardar
                 var producto = new Producto
                 {
                     Nombre = model.Nombre,
