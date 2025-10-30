@@ -28,4 +28,3 @@ namespace GestionProductosClientes.Models
         public int IdMarca { get; set; }
     }
 }
-

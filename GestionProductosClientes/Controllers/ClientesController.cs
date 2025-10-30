@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestionProductosClientes.Controllers
 {
-    [Authorize]
+    [Authorize] //Protege esta vista para usuarios autenticados
     public class ClientesController : Controller
     {
         private readonly ApplicationDbContext _context;

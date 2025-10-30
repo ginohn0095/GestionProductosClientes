@@ -17,15 +17,15 @@ namespace GestionProductosClientes.Controllers
             _context = context;
         }
 
-        // ✅ GET: Mostrar formulario de login con soporte para returnUrl
+        //GET: Mostrar formulario de login con soporte para returnUrl
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            ViewBag.ReturnUrl = returnUrl; // ← Se guarda para redirigir después del login
+            ViewBag.ReturnUrl = returnUrl; //Se guarda para redirigir después del login
             return View(new LoginViewModel());
         }
 
-        // ✅ POST: Procesar login y redirigir correctamente
+        // POST: Procesar login y redirigir correctamente
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
@@ -42,12 +42,12 @@ namespace GestionProductosClientes.Controllers
                 return View(model);
             }
 
-            // ✅ Guardar variables de sesión
+            //Guardar variables de sesión
             HttpContext.Session.SetString("UsuarioLogueado", "true");
             HttpContext.Session.SetString("NombreUsuario", $"{cliente.Nombre} {cliente.ApellidoPaterno}");
             HttpContext.Session.SetInt32("IdUsuario", cliente.Id);
 
-            // ✅ Autenticación por cookies con persistencia
+            //Autenticación por cookies con persistencia
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, cliente.Nombre),
@@ -59,18 +59,18 @@ namespace GestionProductosClientes.Controllers
 
             await HttpContext.SignInAsync("MiCookie", principal, new AuthenticationProperties
             {
-                IsPersistent = true, // ← Mantiene la cookie activa entre peticiones
-                ExpiresUtc = DateTime.UtcNow.AddMinutes(30) // ← Duración de sesión
+                IsPersistent = true, //Mantiene la cookie activa entre peticiones
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(30) //Duración de sesión
             });
 
-            // ✅ Redirección inteligente según returnUrl
+            // Redirección inteligente según returnUrl
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
 
             return RedirectToAction("Index", "Home");
         }
 
-        // ✅ GET: Logout con cierre de sesión y autenticación
+        //GET: Logout con cierre de sesión y autenticación
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Clear();

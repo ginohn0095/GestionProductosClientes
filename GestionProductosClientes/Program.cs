@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ? MVC y sesiones
+//MVC y sesiones
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
@@ -14,7 +14,7 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
-// ? Autenticación por cookies (CORREGIDO)
+//Autenticación por cookies
 builder.Services.AddAuthentication("MiCookie")
     .AddCookie("MiCookie", options =>
     {
@@ -24,13 +24,13 @@ builder.Services.AddAuthentication("MiCookie")
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
-// ? Base de datos
+//Base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// ? Pipeline de ejecución
+//Pipeline de ejecución
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -42,14 +42,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// ? Middleware de sesión
+//Middleware de sesión
 app.UseSession();
 
-// ? Middleware de autenticación (CORREGIDO)
+//Middleware de autenticación
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ? Ruta por defecto
+//Ruta por defecto
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}");
